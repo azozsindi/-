@@ -4,10 +4,11 @@
  */
 
 import React, { useState } from "react";
-import { Copy, Check, Link as LinkIcon, Ticket, Code2, Eye, Info, Database, Wand2, QrCode, Smartphone, Camera, UserPlus, Download, Loader2 } from "lucide-react";
+import { Copy, Check, Link as LinkIcon, Ticket, Code2, Eye, Info, Database, Wand2, QrCode, Smartphone, Camera, UserPlus, Download, Loader2, Sparkles, Share2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { QRCodeSVG } from "qrcode.react";
 import * as XLSX from "xlsx";
+import confetti from "canvas-confetti";
 
 const GAS_CODE = `function doGet(e) {
   try {
@@ -91,6 +92,15 @@ export default function App() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const fireConfetti = () => {
+    confetti({
+      particleCount: 150,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#4f46e5', '#818cf8', '#fbbf24', '#f472b6']
+    });
+  };
+
   const registerOne = async (name: string, count: number) => {
     const uniqueId = Math.random().toString(36).substring(2, 10).toUpperCase();
     const url = `${scriptUrl}?action=register&id=${uniqueId}&name=${encodeURIComponent(name)}&count=${count}`;
@@ -105,6 +115,7 @@ export default function App() {
     try {
       const ticket = await registerOne(guestName, ticketCount);
       setRegisteredTickets([ticket]);
+      fireConfetti();
     } catch (error) {
       console.error(error);
       alert("حدث خطأ في الاتصال.");
@@ -120,7 +131,6 @@ export default function App() {
     const results = [];
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      // Parse "Name, Count" or just "Name"
       const parts = line.split(/[,،-]/);
       const name = parts[0].trim();
       const count = parseInt(parts[1]) || 1;
@@ -133,6 +143,7 @@ export default function App() {
     setRegisteredTickets(results);
     setLoading(false);
     setProgress(0);
+    fireConfetti();
     alert(`تم تسجيل ${results.length} ضيف بنجاح!`);
   };
 
@@ -149,7 +160,7 @@ export default function App() {
       
       setLoading(true);
       const results = [];
-      const rows = data.slice(1); // Skip header
+      const rows = data.slice(1);
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
         const name = row[0]?.toString().trim();
@@ -165,6 +176,7 @@ export default function App() {
       setRegisteredTickets(results);
       setLoading(false);
       setProgress(0);
+      fireConfetti();
       alert(`تم تسجيل ${results.length} ضيف من الملف بنجاح!`);
     };
     reader.readAsBinaryString(file);
@@ -191,143 +203,233 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans p-4 md:p-8" dir="rtl">
-      <div className="max-w-md mx-auto space-y-6">
-        <header className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-2xl shadow-xl mb-2">
-            <Ticket className="text-white w-8 h-8" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-slate-100 text-slate-900 font-sans selection:bg-indigo-100" dir="rtl">
+      {/* Background Orbs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-[10%] -left-[10%] w-[60%] h-[60%] bg-indigo-200/30 blur-[120px] rounded-full animate-pulse" />
+        <div className="absolute top-[60%] -right-[10%] w-[70%] h-[70%] bg-violet-200/30 blur-[120px] rounded-full animate-pulse delay-700" />
+        <div className="absolute top-[30%] left-[40%] w-[30%] h-[30%] bg-amber-100/20 blur-[100px] rounded-full animate-pulse delay-1000" />
+      </div>
+
+      <div className="max-w-md mx-auto px-5 py-10 relative z-10 space-y-10">
+        {/* Header */}
+        <header className="text-center space-y-4">
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0, rotate: -10 }}
+            animate={{ scale: 1, opacity: 1, rotate: 0 }}
+            className="inline-flex items-center justify-center w-24 h-24 bg-indigo-600 rounded-[2.5rem] shadow-[0_20px_50px_-15px_rgba(79,70,229,0.5)] mb-2 relative group"
+          >
+            <Ticket className="text-white w-12 h-12 group-hover:scale-110 transition-transform" />
+            <div className="absolute -top-1 -right-1 w-5 h-5 bg-amber-400 rounded-full border-4 border-white shadow-lg" />
+            <Sparkles className="absolute -bottom-2 -left-2 text-amber-400 w-6 h-6 animate-bounce" />
+          </motion.div>
+          <div className="space-y-1">
+            <h1 className="text-4xl font-display font-black tracking-tight text-slate-900">نظام التذاكر</h1>
+            <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">إدارة الدخول الذكية • 2026</p>
           </div>
-          <h1 className="text-2xl font-black tracking-tight">نظام التذاكر الذكي</h1>
           <div className="flex items-center justify-center gap-2">
             <button 
               onClick={copyToClipboard}
-              className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full hover:bg-indigo-100 transition-colors"
+              className="text-[11px] font-black text-indigo-600 bg-white/80 backdrop-blur-md px-5 py-2 rounded-full shadow-sm border border-indigo-100/50 hover:bg-indigo-50 transition-all active:scale-95 flex items-center gap-2"
             >
+              <Code2 className="w-3.5 h-3.5" />
               {copied ? "تم نسخ الكود ✅" : "نسخ كود السكربت"}
             </button>
           </div>
         </header>
 
-        <div className="flex bg-white p-1 rounded-2xl border border-slate-100 shadow-sm">
+        {/* Tab Switcher */}
+        <div className="flex bg-white/40 backdrop-blur-md p-1.5 rounded-[2.5rem] border border-white/60 shadow-xl shadow-indigo-500/5">
           <button 
             onClick={() => setImportMode("single")}
-            className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${importMode === "single" ? "bg-indigo-600 text-white shadow-lg" : "text-slate-400"}`}
+            className={`flex-1 py-4 rounded-[2rem] text-sm font-black transition-all duration-500 flex items-center justify-center gap-2 ${importMode === "single" ? "bg-indigo-600 text-white shadow-2xl shadow-indigo-400/30" : "text-slate-400 hover:text-slate-600"}`}
           >
+            <UserPlus className="w-4 h-4" />
             إضافة فردية
           </button>
           <button 
             onClick={() => setImportMode("bulk")}
-            className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${importMode === "bulk" ? "bg-indigo-600 text-white shadow-lg" : "text-slate-400"}`}
+            className={`flex-1 py-4 rounded-[2rem] text-sm font-black transition-all duration-500 flex items-center justify-center gap-2 ${importMode === "bulk" ? "bg-indigo-600 text-white shadow-2xl shadow-indigo-400/30" : "text-slate-400 hover:text-slate-600"}`}
           >
-            إضافة جماعية (واتساب/إكسل)
+            <Database className="w-4 h-4" />
+            إضافة جماعية
           </button>
         </div>
 
-        <main className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 space-y-6">
-          {importMode === "single" ? (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase mb-2 mr-1">اسم الضيف</label>
-                <input
-                  type="text"
-                  value={guestName}
-                  onChange={(e) => setGuestName(e.target.value)}
-                  placeholder="أدخل الاسم هنا..."
-                  className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-lg font-bold"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase mb-2 mr-1">عدد الأشخاص</label>
-                <input
-                  type="number"
-                  min="1"
-                  value={ticketCount}
-                  onChange={(e) => setTicketCount(parseInt(e.target.value) || 1)}
-                  className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-lg font-bold"
-                />
-              </div>
-              <button
-                onClick={handleSingleRegister}
-                disabled={loading}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-3 transition-all shadow-xl shadow-indigo-100 active:scale-95"
+        {/* Main Content */}
+        <main className="glass rounded-[3.5rem] p-8 space-y-8 relative overflow-hidden shadow-2xl shadow-indigo-500/10">
+          <AnimatePresence mode="wait">
+            {importMode === "single" ? (
+              <motion.div 
+                key="single"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-6"
               >
-                {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <QrCode className="w-6 h-6" />}
-                إصدار التذكرة
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              <div className="space-y-4">
-                <label className="block text-[10px] font-black text-slate-400 uppercase mb-2 mr-1 text-center">الصق الأسماء من الواتساب (اسم، عدد)</label>
-                <textarea
-                  value={bulkText}
-                  onChange={(e) => setBulkText(e.target.value)}
-                  placeholder="محمد علي، 2&#10;أحمد خالد، 5&#10;سارة، 1"
-                  className="w-full h-32 px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:border-indigo-500 transition-all text-sm font-medium resize-none"
-                />
-                <button
-                  onClick={handleBulkPaste}
-                  disabled={loading}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white py-4 rounded-2xl font-black flex items-center justify-center gap-2 transition-all"
-                >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
-                  تسجيل القائمة الملصقة
-                </button>
-              </div>
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100"></div></div>
-                <div className="relative flex justify-center text-[10px] uppercase font-black text-slate-300"><span className="bg-white px-4">أو ارفع ملف إكسل</span></div>
-              </div>
-
-              <div className="flex flex-col items-center gap-4">
-                <input 
-                  type="file" 
-                  id="excel-upload" 
-                  hidden 
-                  accept=".xlsx, .xls" 
-                  onChange={handleFileUpload}
-                />
-                <label 
-                  htmlFor="excel-upload"
-                  className="w-full border-2 border-dashed border-slate-200 rounded-2xl p-6 flex flex-col items-center gap-2 cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/30 transition-all"
-                >
-                  <Database className="w-8 h-8 text-slate-300" />
-                  <span className="text-xs font-bold text-slate-400">اختر ملف Excel</span>
-                </label>
-              </div>
-
-              {loading && progress > 0 && (
-                <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                  <motion.div initial={{ width: 0 }} animate={{ width: `${progress}%` }} className="bg-indigo-600 h-full" />
+                <div className="space-y-5">
+                  <div className="space-y-2">
+                    <label className="block text-[11px] font-black text-slate-400 uppercase mr-3">اسم الضيف</label>
+                    <input
+                      type="text"
+                      value={guestName}
+                      onChange={(e) => setGuestName(e.target.value)}
+                      placeholder="أدخل الاسم هنا..."
+                      className="w-full px-7 py-6 bg-white/60 border border-white/80 rounded-[2rem] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all text-xl font-bold placeholder:text-slate-300 shadow-inner"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-[11px] font-black text-slate-400 uppercase mr-3">عدد الأشخاص</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={ticketCount}
+                      onChange={(e) => setTicketCount(parseInt(e.target.value) || 1)}
+                      className="w-full px-7 py-6 bg-white/60 border border-white/80 rounded-[2rem] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all text-xl font-bold shadow-inner"
+                    />
+                  </div>
                 </div>
-              )}
-            </div>
-          )}
+                <button
+                  onClick={handleSingleRegister}
+                  disabled={loading}
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white py-6 rounded-[2rem] font-black text-xl flex items-center justify-center gap-4 transition-all shadow-[0_20px_40px_-10px_rgba(79,70,229,0.4)] active:scale-95 group"
+                >
+                  {loading ? <Loader2 className="w-7 h-7 animate-spin" /> : <QrCode className="w-7 h-7 group-hover:rotate-12 transition-transform" />}
+                  إصدار التذكرة
+                </button>
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="bulk"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className="space-y-8"
+              >
+                <div className="space-y-4">
+                  <label className="block text-[11px] font-black text-slate-400 uppercase text-center">الصق الأسماء من الواتساب</label>
+                  <textarea
+                    value={bulkText}
+                    onChange={(e) => setBulkText(e.target.value)}
+                    placeholder="محمد علي، 2&#10;أحمد خالد، 5"
+                    className="w-full h-44 px-7 py-6 bg-white/60 border border-white/80 rounded-[2rem] focus:outline-none focus:border-indigo-500/50 transition-all text-sm font-bold resize-none shadow-inner"
+                  />
+                  <button
+                    onClick={handleBulkPaste}
+                    disabled={loading}
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white py-5 rounded-[2rem] font-black flex items-center justify-center gap-3 transition-all shadow-xl shadow-indigo-100 active:scale-95"
+                  >
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
+                    تسجيل القائمة الملصقة
+                  </button>
+                </div>
 
+                <div className="relative flex items-center gap-4">
+                  <div className="flex-1 h-px bg-slate-200/50" />
+                  <span className="text-[10px] uppercase font-black text-slate-300">أو ملف إكسل</span>
+                  <div className="flex-1 h-px bg-slate-200/50" />
+                </div>
+
+                <div className="flex flex-col items-center gap-4">
+                  <input type="file" id="excel-upload" hidden accept=".xlsx, .xls" onChange={handleFileUpload} />
+                  <label 
+                    htmlFor="excel-upload"
+                    className="w-full border-2 border-dashed border-slate-200 rounded-[2.5rem] p-10 flex flex-col items-center gap-4 cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/50 transition-all group"
+                  >
+                    <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+                      <Database className="w-8 h-8 text-slate-400 group-hover:text-indigo-500 transition-colors" />
+                    </div>
+                    <span className="text-xs font-black text-slate-400 group-hover:text-indigo-600 transition-colors">اختر ملف Excel</span>
+                  </label>
+                </div>
+
+                {loading && progress > 0 && (
+                  <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden shadow-inner">
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${progress}%` }} className="bg-indigo-600 h-full shadow-[0_0_15px_rgba(79,70,229,0.6)]" />
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Results Area */}
           <AnimatePresence>
             {registeredTickets.length > 0 && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="pt-8 space-y-8">
-                <div className="h-px bg-slate-100" />
-                <h3 className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">التذاكر المصدرة ({registeredTickets.length})</h3>
-                <div className="space-y-12">
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                className="pt-12 space-y-12 border-t border-slate-100/50"
+              >
+                <div className="flex items-center justify-center gap-4">
+                  <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce" />
+                  <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">التذاكر المصدرة ({registeredTickets.length})</h3>
+                  <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce delay-100" />
+                </div>
+                
+                <div className="space-y-20 pb-10">
                   {registeredTickets.map((ticket, i) => (
-                    <div key={i} className="flex flex-col items-center gap-4">
-                      <div className="p-6 bg-white rounded-[2.5rem] border-4 border-indigo-50 shadow-inner relative group">
-                        <QRCodeSVG id={`qr-${i}`} value={ticket.url} size={180} />
-                        <button 
-                          onClick={() => downloadQR(`qr-${i}`, ticket.name)}
-                          className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-6 py-2 rounded-full shadow-xl font-bold flex items-center gap-2 hover:scale-105 transition-transform active:scale-95 whitespace-nowrap"
-                        >
-                          <Download className="w-4 h-4" />
-                          حفظ تذكرة {ticket.name}
-                        </button>
+                    <motion.div 
+                      key={i} 
+                      initial={{ opacity: 0, scale: 0.9 }} 
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: i * 0.1 }}
+                      className="flex flex-col items-center gap-8 animate-float"
+                    >
+                      {/* Premium Ticket Visual */}
+                      <div className="relative w-full max-w-[300px]">
+                        <div className="bg-white rounded-[2.5rem] p-10 shadow-[0_30px_60px_-15px_rgba(79,70,229,0.15)] border border-slate-100 relative overflow-hidden ticket-shape group">
+                          {/* Top Section */}
+                          <div className="flex flex-col items-center gap-8 relative z-10">
+                            <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100 shadow-inner group-hover:bg-white transition-colors">
+                              <QRCodeSVG id={`qr-${i}`} value={ticket.url} size={180} />
+                            </div>
+                            
+                            <div className="text-center space-y-2">
+                              <p className="text-2xl font-display font-black text-slate-900">{ticket.name}</p>
+                              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-[11px] font-black uppercase">
+                                <UserPlus className="w-3.5 h-3.5" />
+                                {ticket.count} أشخاص
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Perforated Line */}
+                          <div className="absolute top-[65%] left-0 right-0 border-t-2 border-dashed border-slate-100 pointer-events-none" />
+                          
+                          {/* Bottom Section (Stub) */}
+                          <div className="mt-12 text-center relative z-10 opacity-30">
+                            <p className="text-[9px] font-black uppercase tracking-[0.2em]">Smart Ticket System • 2026</p>
+                          </div>
+                        </div>
+                        
+                        <div className="absolute -bottom-8 left-0 right-0 flex justify-center gap-3 px-4 z-20">
+                          <button 
+                            onClick={() => downloadQR(`qr-${i}`, ticket.name)}
+                            className="flex-1 bg-slate-900 text-white py-4 rounded-2xl shadow-2xl font-black text-xs flex items-center justify-center gap-3 hover:bg-slate-800 transition-all active:scale-95"
+                          >
+                            <Download className="w-4 h-4" />
+                            حفظ الصورة
+                          </button>
+                          <button 
+                            onClick={() => {
+                              if (navigator.share) {
+                                navigator.share({
+                                  title: 'تذكرتك الذكية',
+                                  text: `تذكرة دخول لـ ${ticket.name}`,
+                                  url: ticket.url
+                                });
+                              } else {
+                                navigator.clipboard.writeText(ticket.url);
+                                alert("تم نسخ الرابط!");
+                              }
+                            }}
+                            className="w-14 bg-white border border-slate-100 text-slate-900 rounded-2xl shadow-xl flex items-center justify-center hover:bg-slate-50 transition-all active:scale-95"
+                          >
+                            <Share2 className="w-5 h-5" />
+                          </button>
+                        </div>
                       </div>
-                      <div className="text-center pt-4">
-                        <p className="text-sm font-bold text-slate-800">{ticket.name}</p>
-                        <p className="text-[10px] text-slate-400 mt-1">العدد: {ticket.count} أشخاص</p>
-                      </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               </motion.div>
@@ -335,22 +437,34 @@ export default function App() {
           </AnimatePresence>
         </main>
 
-        <details className="text-center">
-          <summary className="text-[10px] font-bold text-slate-300 cursor-pointer hover:text-slate-500 transition-colors list-none">الإعدادات المتقدمة</summary>
-          <div className="mt-4 p-4 bg-white rounded-2xl border border-slate-100 space-y-2">
-            <label className="block text-[10px] font-bold text-slate-400 text-right">رابط السكربت (GAS URL)</label>
-            <input
-              type="text"
-              value={scriptUrl}
-              onChange={(e) => setScriptUrl(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-lg text-[10px] font-mono"
-              dir="ltr"
-            />
-          </div>
+        {/* Footer Settings */}
+        <details className="text-center group">
+          <summary className="text-[11px] font-black text-slate-300 cursor-pointer hover:text-indigo-400 transition-colors list-none flex items-center justify-center gap-2 py-4">
+            <Wand2 className="w-3.5 h-3.5" />
+            الإعدادات المتقدمة
+          </summary>
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-2 p-8 bg-white/60 backdrop-blur-md rounded-[2.5rem] border border-white/80 shadow-xl space-y-4"
+          >
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-slate-400 text-right uppercase mr-2">رابط السكربت المباشر</label>
+              <input
+                type="text"
+                value={scriptUrl}
+                onChange={(e) => setScriptUrl(e.target.value)}
+                className="w-full px-5 py-4 bg-white/80 border border-slate-100 rounded-2xl text-[10px] font-mono focus:outline-none focus:border-indigo-500 shadow-inner"
+                dir="ltr"
+              />
+            </div>
+            <p className="text-[9px] text-slate-400 leading-relaxed">تأكد من نشر السكربت في Google Apps Script كـ Web App وإعطاء صلاحية الوصول للجميع (Anyone).</p>
+          </motion.div>
         </details>
 
-        <footer className="text-center text-[10px] text-slate-400 font-medium pb-8">
-          نظام التذاكر الذكي © 2026
+        <footer className="text-center space-y-2 pb-16">
+          <div className="h-px w-12 bg-slate-200 mx-auto" />
+          <p className="text-[11px] text-slate-400 font-black uppercase tracking-widest opacity-40">نظام التذاكر الذكي • 2026</p>
         </footer>
       </div>
     </div>
