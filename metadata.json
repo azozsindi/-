@@ -1,0 +1,5 @@
+{
+  "name": "نظام التذاكر الذكي",
+  "description": "نظام متكامل لإدارة التذاكر الرقمية باستخدام جداول بيانات جوجل وApps Script.",
+  "requestFramePermissions": []
+}
